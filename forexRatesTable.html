@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Forex Rates Table</title>
+</head>
+<style>
+    table, th, td {
+      border:1px solid black;
+    }
+</style>
+<body>
+    <h2>Forex Rates Table</h2>
+
+    <table id="ratesTable" style="width:100%">
+        <tr>
+            <td>
+                Currency Name
+            </td>
+            <td>
+                Original Rates
+            </td>
+            <td>
+                Modified Rates
+            </td>
+        </tr>
+    </table>
+    <script src="config.js"></script>
+    <script>
+        async function fetchRates() {
+            try {
+                const response = await fetch('https://api.apilayer.com/fixer/latest', {
+                    headers: { 'apikey': API_KEY }
+                });
+                
+                if (!response.ok) throw new Error('API request failed');
+                
+                const { rates } = await response.json(); // get the [rates] values, which is an Object
+
+                return Object.entries(rates); // return an array instead of Object
+            } catch (error) {
+                console.error('Error:', error);
+            }
+        }
+        
+        async function getModifiedRates(oldRates) {
+            return oldRates.map(
+                ([curr, rate]) => [curr, Number(rate) + 10.0002]
+            );
+        }
+
+        function isEven(num) {
+            return Number.isInteger(num) && num % 2 === 0;
+            // return Number.isInteger(num);
+        }
+
+        async function main() {
+            var oldRates, newRates;
+            // get the values for oldRates and newRates
+            try {
+                oldRates = await fetchRates();
+                newRates = await getModifiedRates(oldRates);
+            } catch (error) {
+                console.error("Error:", error);
+            }
+
+            // dynamically add table row and table data
+            for (let i = 0; i < oldRates.length; i++) {
+                const [currency, oldRate] = oldRates[i];
+                const modifiedRate = newRates[i][1];
+                const isHKD = (currency === 'HKD');
+
+                var tr = document.createElement('tr'); // Create new <tr>
+                document.getElementById('ratesTable').appendChild(tr); // Add it to the table
+
+                var currencyCell = document.createElement('td'); // Create new <td>
+                currencyCell.appendChild(document.createTextNode(currency)); // Put the currency in the cell
+                tr.appendChild(currencyCell); // Add the cell to the current row
+
+                var oldRateCell = document.createElement('td'); // Create new <td>
+                oldRateCell.appendChild(document.createTextNode(oldRate)); // Put the old rate in the cell
+                if(isEven(oldRate) || isHKD){ //modify the border color to red if old rate is even or it is in HKD currency
+                    oldRateCell.style.borderColor = "red";
+                }
+                tr.appendChild(oldRateCell); // Add the cell to the current row
+
+                var modifiedRateCell = document.createElement('td'); // Create new <td>
+                modifiedRateCell.appendChild(document.createTextNode(modifiedRate)); // Put the modified rate in the cell
+                if(isEven(modifiedRate) || isHKD){ //modify the border color to red if modified rate is even or it is in HKD currency
+                    modifiedRateCell.style.borderColor = "red";
+                }
+                tr.appendChild(modifiedRateCell ); // Add the cell to the current row
+            };
+        }   
+        main(); 
+    </script>
+</body>
+</html>

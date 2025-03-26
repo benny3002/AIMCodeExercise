@@ -1,6 +1,6 @@
 # AIMCodeExercise
 
-Project Setup
+
 config.js:
 This file contains the API key needed for the currency exchange rates, this API key is new. For the convenience of checking, it is not developed in best practice. In real-world projects, we should:
 1. Add it to .gitignore
